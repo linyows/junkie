@@ -1,0 +1,24 @@
+{
+  "name": "linyows/junkie",
+  "version": "1.0.0",
+  "description": "Junkie notifies pull-request to Slack channel that for specified a language.",
+  "scripts": {
+    "ci": "npm i && npm run lint",
+    "lint": "tslint src/*.ts",
+    "lint:fix": "tslint --fix src/*.ts"
+  },
+  "devDependencies": {
+    "@google/clasp": "^1.6.3",
+    "tslint": "^5.11.0",
+    "tslint-microsoft-contrib": "^6.0.0"
+  },
+  "tslintIgnore": [
+    "**/node_modules/**"
+  ],
+  "author": "linyows",
+  "license": "MIT",
+  "homepage": "https://github.com/linyows/junkie",
+  "dependencies": {
+    "@types/google-apps-script": "0.0.33"
+  }
+}
