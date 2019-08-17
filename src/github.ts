@@ -28,6 +28,7 @@ export class Github {
 
   public reposByUserAndLang(u: string, l: string) {
     const res = this.searchRepos(`+language:${l}+user:${u}`)
+
     return (res.items.length > 0) ? res.items : []
   }
 
@@ -61,7 +62,7 @@ export class Github {
   }
 
   public createHook(repo: string, webhook: string, events: string[]) {
-    console.log(repo + ' : create hook!!!!!!!!!!!!!!!!!!!!!!!!')
+  console.log(`${repo} : create hook!!!!!!!!!!!!!!!!!!!!!!!!`)
     // const res = UrlFetchApp.fetch(`${this.apiEndpoint}/repos/${repo}/hooks`, {
     //   method: 'post',
     //   headers: this.headers,
@@ -75,7 +76,7 @@ export class Github {
   }
 
   public updateHookEvents(repo: string, id: number, events: string[]) {
-    console.log(repo + ' : update hook-----------------------')
+  console.log(`${repo} : update hook-----------------------`)
     // const res = UrlFetchApp.fetch(`${this.apiEndpoint}/repos/${repo}/hooks/${id}`, {
     //   method: 'post',
     //   headers: this.headers,
