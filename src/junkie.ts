@@ -25,6 +25,11 @@ interface SpreadsheetsConfig {
   url: string
 }
 
+interface Config {
+  github: GithubConfig
+  spreadsheets: SpreadsheetsConfig
+}
+
 export class Junkie {
   private get slack(): any {
     if (this.pSlack === undefined) {
@@ -63,7 +68,7 @@ export class Junkie {
       const numColumn = this.sheet.getLastColumn()
       this.pData = this.sheet.getSheetValues(startRow, startColumn, numRow, numColumn)
     }
-  
+
     return this.pData
   }
 
