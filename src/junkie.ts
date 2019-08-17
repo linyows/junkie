@@ -91,6 +91,29 @@ export class Junkie {
     return arr.filter((v) => v)
   }
 
+  private runByLang(lang: string, orgs: string[], webhook: string, events: string[]) {
+    let repos: string[] = []
+    for (const org of orgs) {
+      const langRepos = this.github.reposByUserAndLang(org, lang)
+      for (const r of langRepos) {
+        repos.push(r.full_name)
+      }
+    }
+
+    for (const r of repos) {
+      const hook = this.github.findHook(r, webhook)
+      if (hook === undefined) {
+        this.github.createHook(r, webhook, events)
+        continue
+      }
+      if (hook.events.sort().toString() !== events.sort().toString()) {
+        this.github.updateHookEvents(r, hook.id, events)
+        continue
+      }
+      console.log('found but same!!!!!!!!!!!!!!!!!')
+    }
+  }
+
   public run() {
     const channelColumn = 0
     const webhookColumn = 1
@@ -99,21 +122,14 @@ export class Junkie {
     const eventsColumn = 4
 
     for (const task of this.data) {
-      const webhook = Junkie.NORMALIZE(`${task[webhookColumn]}`)
       const orgs = Junkie.NORMALIZE(`${task[orgsColumn]}`)
-      const lang = Junkie.NORMALIZE(`${task[langColumn]}`)
-      const events = Junkie.NORMALIZE(`${task[eventsColumn]}`)
-      if (orgs.length === 0 || lang === '' || webhook === '') {
+      const lang = `${task[langColumn]}`.trim()
+      const webhook = `${task[webhookColumn]}`.trim()
+      if (orgs.length === 0 || lang === '' || lang === undefined || webhook === '' || webhook === undefined) {
         continue
       }
-      let projects: []string = []
-      for (const org of orgs) {
-        const repos = this.github.reposByUserAndLang(org, lang)
-        for (const repo of repos) {
-          projects.push(repo.fullname)
-        }
-      }
-      console.log(projects)
+      const events = Junkie.NORMALIZE(`${task[eventsColumn]}`)
+      this.runByLang(lang, orgs, webhook, events)
     }
   }
 }
