@@ -103,7 +103,7 @@ export class Junkie {
       const orgs = Junkie.NORMALIZE(`${task[orgsColumn]}`)
       const lang = Junkie.NORMALIZE(`${task[langColumn]}`)
       const events = Junkie.NORMALIZE(`${task[eventsColumn]}`)
-      if (orgs.length === 0 || langs.length === 0) {
+      if (orgs.length === 0 || lang === '' || webhook === '') {
         continue
       }
       let projects: []string = []
