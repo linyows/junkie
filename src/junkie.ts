@@ -95,13 +95,13 @@ export class Junkie {
     const channelColumn = 0
     const webhookColumn = 1
     const orgsColumn = 2
-    const langsColumn = 3
+    const langColumn = 3
     const eventsColumn = 4
 
     for (const task of this.data) {
       const webhook = Junkie.NORMALIZE(`${task[webhookColumn]}`)
       const orgs = Junkie.NORMALIZE(`${task[orgsColumn]}`)
-      const langs = Junkie.NORMALIZE(`${task[langsColumn]}`)
+      const lang = Junkie.NORMALIZE(`${task[langColumn]}`)
       const events = Junkie.NORMALIZE(`${task[eventsColumn]}`)
       if (orgs.length === 0 || langs.length === 0) {
         continue
