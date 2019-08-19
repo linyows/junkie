@@ -1,11 +1,13 @@
-Junkie
-==
+<p align="center">
+  <img width="400" src="https://raw.githubusercontent.com/linyows/junkie/master/misc/junkie-logo.png"> <br><br>
+  <strong>Junkie</strong> notifies pull-request to Slack channel that for specified a language.
+</p>
 
-Junkie notifies pull-request to Slack channel that for specified a language.
-
+<p align="center">
 <a href="https://travis-ci.org/linyows/junkie" title="travis"><img src="https://img.shields.io/travis/linyows/junkie.svg?style=for-the-badge"></a>
 <a href="https://github.com/google/clasp" title="clasp"><img src="https://img.shields.io/badge/built%20with-clasp-4285f4.svg?style=for-the-badge"></a>
 <a href="https://github.com/linyows/junkie/blob/master/LICENSE" title="MIT License"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge"></a>
+</p>
 
 Usage
 -----
