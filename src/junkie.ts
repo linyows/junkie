@@ -15,9 +15,8 @@ interface GithubConfig {
 interface SlackConfig {
   token: string
   username: string
-  textSuffix: string
-  textEmpty: string
-  textDefault: string
+  text: string
+  iconUrl: string
 }
 
 interface SpreadsheetsConfig {
@@ -28,6 +27,19 @@ interface SpreadsheetsConfig {
 interface Config {
   github: GithubConfig
   spreadsheets: SpreadsheetsConfig
+}
+
+interface OwnerRepos {
+  owner: string
+  repos: any[]
+}
+
+interface Task {
+  channel: string
+  lang: string
+  webhook: string
+  orgs: string[]
+  events: string[]
 }
 
 export class Junkie {
@@ -99,6 +111,7 @@ export class Junkie {
     const eventsColumn = 4
 
     for (const task of this.data) {
+      const channel = `${task[channelColumn]}`.trim()
       const orgs = Junkie.NORMALIZE(`${task[orgsColumn]}`)
       const lang = `${task[langColumn]}`.trim()
       const webhook = `${task[webhookColumn]}`.trim()
@@ -106,40 +119,132 @@ export class Junkie {
         continue
       }
       const events = Junkie.NORMALIZE(`${task[eventsColumn]}`)
-      this.runByLang(lang, orgs, webhook, events)
+      const task: Task = { channel, lang, orgs, webhook, events }
+      this.runByLang(task)
     }
   }
 
-  private runByLang(lang: string, orgs: string[], webhook: string, events: string[]) {
-    const repos: string[] = []
-    for (const org of orgs) {
-      const langRepos = this.github.reposByUserAndLang(org, lang)
-      for (const r of langRepos) {
-        repos.push(r.full_name)
+  private defaultSlackParams() {
+    return {
+      username: this.config.slack.username,
+      icon_url: this.config.slack.iconUrl,
+      link_names: 1,
+      text: this.config.slack.text,
+    }
+  }
+
+  private runByLang(task: Task) {
+    const allRepos: OwnerRepos[] = []
+
+    for (const owner of task.orgs) {
+      const repos = this.github.reposByUserAndLang(owner, task.lang)
+      allRepos.push({ owner, repos })
+    }
+
+    const newRepos: any[] = []
+    const updatedRepos: any[] = []
+
+    for (const aRepos of allRepos) {
+      for (const rr of aRepos.repos) {
+        const hook = this.github.findHook(rr.full_name, task.webhook)
+        if (this.createHookIfNone(hook, rr.full_name, task)) {
+          newRepos.push(rr)
+          continue
+        }
+        if (this.updateHookIfDiff(hook, rr.full_name, task)) {
+          updatedRepos.push(rr)
+          continue
+        }
+        console.log('found but same!!!!!!!!!!!!!!!!!')
       }
     }
 
-    for (const r of repos) {
-      const hook = this.github.findHook(r, webhook)
-      if (hook === undefined) {
-        this.github.createHook(r, webhook, events)
-        continue
-      }
-
-      const a = hook
-        .events
-        .sort()
-        .toString()
-
-      const b = events
-        .sort()
-        .toString()
-
-      if (a !== b) {
-        this.github.updateHookEvents(r, hook.id, events)
-        continue
-      }
-      console.log('found but same!!!!!!!!!!!!!!!!!')
+    if (newRepos.length === 0 && updatedRepos.length === 0) {
+      return
     }
+
+    const attachments: any[] = []
+
+    for (const owner of task.orgs) {
+      let params: any = {}
+
+      const newRepos4Text: string[] = []
+      for (const r of newRepos) {
+        if (owner !== r.owner.login) {
+          continue
+        }
+        newRepos4Text.push(`<${r.owner.html_url}/${r.name}|${r.name}>`)
+        params = {
+          author_name: r.owner.login,
+          author_link: r.owner.html_url,
+          author_icon: r.owner.avatar_url,
+          footer: 'Junkie',
+          footer_icon: this.config.slack.iconUrl
+        }
+      }
+      if (newRepos4Text.length > 0) {
+        attachments.push({ ...params, ...{
+          title: 'New notify for repositories',
+          color: '#000000',
+          text: newRepos4Text.join('\n')
+        }})
+      }
+
+      const updatedRepos4Text: string[] = []
+      for (const r of updatedRepos) {
+        if (owner !== r.owner.login) {
+          continue
+        }
+        updatedRepos4Text.push(`<${r.owner.html_url}/${r.name}|${r.name}>`)
+        params = {
+          author_name: r.owner.login,
+          author_link: r.owner.html_url,
+          author_icon: r.owner.avatar_url,
+          footer: 'Junkie',
+          footer_icon: this.config.slack.iconUrl
+        }
+      }
+      if (updatedRepos4Text.length > 0) {
+        attachments.push({ ...params, ...{
+          title: 'Updated notify settings for repositories',
+          color: '#CCCCCC',
+          text: updatedRepos4Text.join('\n')
+        }})
+      }
+    }
+
+    console.log('=================================================')
+    console.log(attachments)
+
+    //this.slack.postMessage(task.channel, {
+    this.slack.postMessage('linyows改', {
+      ...this.defaultSlackParams(), ...{ attachments: JSON.stringify(attachments) } })
+  }
+
+  private createHookIfNone(hook, repo: string, task: Task): boolean {
+    if (hook !== undefined) {
+      return false
+    }
+    //this.github.createHook(repo, task.webhook, task.events)
+
+    return true
+  }
+
+  private updateHookIfDiff(hook, repo: string, task: Task): boolean {
+    const a = hook
+      .events
+      .sort()
+      .toString()
+
+    const b = task.events
+      .sort()
+      .toString()
+
+    if (a === b) {
+      return false
+    }
+    //this.github.updateHookEvents(repo, hook.id, task.events)
+
+    return true
   }
 }

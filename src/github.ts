@@ -62,29 +62,27 @@ export class Github {
   }
 
   public createHook(repo: string, webhook: string, events: string[]) {
-  console.log(`${repo} : create hook!!!!!!!!!!!!!!!!!!!!!!!!`)
-    // const res = UrlFetchApp.fetch(`${this.apiEndpoint}/repos/${repo}/hooks`, {
-    //   method: 'post',
-    //   headers: this.headers,
-    //   payload: {
-    //     config: { url: webhook },
-    //     events: events
-    //   }
-    // })
+    const res = UrlFetchApp.fetch(`${this.apiEndpoint}/repos/${repo}/hooks`, {
+      method: 'post',
+      headers: this.headers,
+      payload: {
+        config: { url: webhook },
+        events: events
+      }
+    })
 
-    // return JSON.parse(res.getContentText())
+    return JSON.parse(res.getContentText())
   }
 
   public updateHookEvents(repo: string, id: number, events: string[]) {
-  console.log(`${repo} : update hook-----------------------`)
-    // const res = UrlFetchApp.fetch(`${this.apiEndpoint}/repos/${repo}/hooks/${id}`, {
-    //   method: 'post',
-    //   headers: this.headers,
-    //   payload: {
-    //     events: events
-    //   }
-    // })
+    const res = UrlFetchApp.fetch(`${this.apiEndpoint}/repos/${repo}/hooks/${id}`, {
+      method: 'post',
+      headers: this.headers,
+      payload: {
+        events: events
+      }
+    })
 
-    // return JSON.parse(res.getContentText())
+    return JSON.parse(res.getContentText())
   }
 }
