@@ -4,28 +4,30 @@
  * Copyright (c) 2019 Tomohisa Oda
  */
 
-import {Github} from './github'
+import {Github, Owner} from './github'
 import {Slack} from './slack'
 
-interface GithubConfig {
+export interface GithubConfig {
   token: string
   apiEndpoint?: string
 }
 
-interface SlackConfig {
+export interface SlackConfig {
   token: string
   username: string
   text: string
   iconUrl: string
 }
 
-interface SpreadsheetsConfig {
+export interface SpreadsheetsConfig {
   id: string
   url: string
 }
 
-interface Config {
+export interface Config {
+  projectUrl: string
   github: GithubConfig
+  slack: SlackConfig
   spreadsheets: SpreadsheetsConfig
 }
 
@@ -124,12 +126,39 @@ export class Junkie {
     }
   }
 
-  private defaultSlackParams() {
+  private defaultSlackParams(lang: string) {
     return {
       username: this.config.slack.username,
       icon_url: this.config.slack.iconUrl,
       link_names: 1,
-      text: this.config.slack.text,
+      text: this.config.slack.text.replace('%s', lang),
+    }
+  }
+
+  private defaultSlackAttachmentParams(owner: any) {
+    const icons = [
+      'nyantocat.gif',
+      'daftpunktocat-thomas.gif',
+      'daftpunktocat-guy.gif',
+      'scarletteocat.jpg',
+      'ironcat.jpg',
+      'octocat-de-los-muertos.jpg',
+      'megacat.jpg',
+      'dojocat.jpg',
+      'doctocat-brown.jpg',
+      'linktocat.jpg',
+      'octotron.jpg',
+      'twenty-percent-cooler-octocat.png',
+      'herme-t-crabb.png'
+    ]
+    const num = Math.floor(Math.random() * Math.floor(icons.length))
+    return {
+      author_name: owner.login,
+      author_link: owner.html_url,
+      author_icon: (this.config.github.apiEndpoint === '' || this.config.github.apiEndpoint !== 'https://api.github.com') ?
+        `https://octodex.github.com/images/${icons[num]}`  : owner.avatar_url,
+      footer: `<${this.config.projectUrl}|Junkie>`,
+      footer_icon: this.config.slack.iconUrl
     }
   }
 
@@ -155,7 +184,7 @@ export class Junkie {
           updatedRepos.push(rr)
           continue
         }
-        console.log('found but same!!!!!!!!!!!!!!!!!')
+        console.log('found but same!')
       }
     }
 
@@ -166,28 +195,25 @@ export class Junkie {
     const attachments: any[] = []
 
     for (const owner of task.orgs) {
-      let params: any = {}
+      let ownerObj: Owner
 
       const newRepos4Text: string[] = []
       for (const r of newRepos) {
         if (owner !== r.owner.login) {
           continue
         }
-        newRepos4Text.push(`<${r.owner.html_url}/${r.name}|${r.name}>`)
-        params = {
-          author_name: r.owner.login,
-          author_link: r.owner.html_url,
-          author_icon: r.owner.avatar_url,
-          footer: 'Junkie',
-          footer_icon: this.config.slack.iconUrl
-        }
+        newRepos4Text.push(`- <${r.owner.html_url}/${r.name}/settings/hooks|${r.name}>`)
+        ownerObj = r.owner
       }
       if (newRepos4Text.length > 0) {
-        attachments.push({ ...params, ...{
-          title: 'New notify for repositories',
-          color: '#000000',
-          text: newRepos4Text.join('\n')
-        }})
+        attachments.push({
+          ...this.defaultSlackAttachmentParams(ownerObj),
+          ...{
+            title: 'New notify settings for repositories',
+            color: '#444444',
+            text: newRepos4Text.join('\n')
+          }
+        })
       }
 
       const updatedRepos4Text: string[] = []
@@ -195,30 +221,25 @@ export class Junkie {
         if (owner !== r.owner.login) {
           continue
         }
-        updatedRepos4Text.push(`<${r.owner.html_url}/${r.name}|${r.name}>`)
-        params = {
-          author_name: r.owner.login,
-          author_link: r.owner.html_url,
-          author_icon: r.owner.avatar_url,
-          footer: 'Junkie',
-          footer_icon: this.config.slack.iconUrl
-        }
+        updatedRepos4Text.push(`- <${r.owner.html_url}/${r.name}/settings/hooks|${r.name}>`)
+        ownerObj = r.owner
       }
       if (updatedRepos4Text.length > 0) {
-        attachments.push({ ...params, ...{
-          title: 'Updated notify settings for repositories',
-          color: '#CCCCCC',
-          text: updatedRepos4Text.join('\n')
-        }})
+        attachments.push({
+          ...this.defaultSlackAttachmentParams(ownerObj),
+          ...{
+            title: 'Updated notify settings for repositories',
+            color: '#CCCCCC',
+            text: updatedRepos4Text.join('\n')
+          }
+        })
       }
     }
 
-    console.log('=================================================')
-    console.log(attachments)
-
     //this.slack.postMessage(task.channel, {
     this.slack.postMessage('linyows改', {
-      ...this.defaultSlackParams(), ...{ attachments: JSON.stringify(attachments) } })
+      ...this.defaultSlackParams(task.lang),
+      ...{ attachments: JSON.stringify(attachments) } })
   }
 
   private createHookIfNone(hook, repo: string, task: Task): boolean {
