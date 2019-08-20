@@ -21,8 +21,33 @@ export interface Owner {
   repos_url: string
   events_url: string
   received_events_url: string
-  type: string
   site_admin: boolean
+}
+
+export interface HookLastResponse {
+  code: number
+  status: string
+  message: string
+}
+
+export interface HookConfig {
+  content_type: string
+  insecure_ssl: string
+  url: string
+}
+
+export interface Hook {
+  id: number
+  name: string
+  active: boolean
+  events: string[]
+  config: HookConfig
+  updated_at: string
+  created_at: string
+  url: string
+  test_url: string
+  ping_url: string
+  last_response: HookLastResponse
 }
 
 /**
@@ -73,7 +98,7 @@ export class Github {
     return JSON.parse(res.getContentText())
   }
 
-  public findHook(repo: string, webhook: string) {
+  public findHook(repo: string, webhook: string): Hook|null {
     const hooks = this.repoHooks(repo)
     for (const h of hooks) {
       if (h.active && h.config.url === webhook) {

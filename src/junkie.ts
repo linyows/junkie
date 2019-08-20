@@ -4,7 +4,7 @@
  * Copyright (c) 2019 Tomohisa Oda
  */
 
-import {Github, Owner} from './github'
+import {Github, Owner, Hook} from './github'
 import {Slack} from './slack'
 
 export interface GithubConfig {
@@ -121,8 +121,8 @@ export class Junkie {
         continue
       }
       const events = Junkie.NORMALIZE(`${task[eventsColumn]}`)
-      const task: Task = { channel, lang, orgs, webhook, events }
-      this.runByLang(task)
+      const t: Task = { channel, lang, orgs, webhook, events }
+      this.runByLang(t)
     }
   }
 
@@ -131,7 +131,7 @@ export class Junkie {
       username: this.config.slack.username,
       icon_url: this.config.slack.iconUrl,
       link_names: 1,
-      text: this.config.slack.text.replace('%s', lang),
+      text: this.config.slack.text.replace('%s', lang)
     }
   }
 
@@ -152,6 +152,7 @@ export class Junkie {
       'herme-t-crabb.png'
     ]
     const num = Math.floor(Math.random() * Math.floor(icons.length))
+
     return {
       author_name: owner.login,
       author_link: owner.html_url,
@@ -175,7 +176,7 @@ export class Junkie {
 
     for (const aRepos of allRepos) {
       for (const rr of aRepos.repos) {
-        const hook = this.github.findHook(rr.full_name, task.webhook)
+        const hook: Hook = this.github.findHook(rr.full_name, task.webhook)
         if (this.createHookIfNone(hook, rr.full_name, task)) {
           newRepos.push(rr)
           continue
@@ -236,22 +237,21 @@ export class Junkie {
       }
     }
 
-    //this.slack.postMessage(task.channel, {
-    this.slack.postMessage('linyows改', {
+    this.slack.postMessage(task.channel, {
       ...this.defaultSlackParams(task.lang),
       ...{ attachments: JSON.stringify(attachments) } })
   }
 
-  private createHookIfNone(hook, repo: string, task: Task): boolean {
+  private createHookIfNone(hook: Hook, repo: string, task: Task): boolean {
     if (hook !== undefined) {
       return false
     }
-    //this.github.createHook(repo, task.webhook, task.events)
+    this.github.createHook(repo, task.webhook, task.events)
 
     return true
   }
 
-  private updateHookIfDiff(hook, repo: string, task: Task): boolean {
+  private updateHookIfDiff(hook: Hook, repo: string, task: Task): boolean {
     const a = hook
       .events
       .sort()
@@ -264,7 +264,7 @@ export class Junkie {
     if (a === b) {
       return false
     }
-    //this.github.updateHookEvents(repo, hook.id, task.events)
+    this.github.updateHookEvents(repo, hook.id, task.events)
 
     return true
   }
