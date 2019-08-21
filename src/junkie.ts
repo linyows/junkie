@@ -42,6 +42,7 @@ interface Task {
   webhook: string
   orgs: string[]
   events: string[]
+  ignore: string[]
 }
 
 export class Junkie {
@@ -111,6 +112,7 @@ export class Junkie {
     const orgsColumn = 2
     const langColumn = 3
     const eventsColumn = 4
+    const ignoreColumn = 5
 
     for (const task of this.data) {
       const channel = `${task[channelColumn]}`.trim()
@@ -121,7 +123,8 @@ export class Junkie {
         continue
       }
       const events = Junkie.NORMALIZE(`${task[eventsColumn]}`)
-      const t: Task = { channel, lang, orgs, webhook, events }
+      const ignore = Junkie.NORMALIZE(`${task[ignoreColumn]}`)
+      const t: Task = { channel, lang, orgs, webhook, events, ignore }
       this.runByLang(t)
     }
   }
@@ -177,15 +180,26 @@ export class Junkie {
     for (const aRepos of allRepos) {
       for (const rr of aRepos.repos) {
         const hook: Hook = this.github.findHook(rr.full_name, task.webhook)
+        if (task.ignore.find((el) => rr.full_name === el)) {
+          const m = `${rr.full_name}: ignored`
+          if (hook !== undefined) {
+            m += 'and hook delete'
+            this.github.deleteHook(rr.full_name, hook.id)
+          }
+          console.log(m)
+          continue
+        }
         if (this.createHookIfNone(hook, rr.full_name, task)) {
+          console.log(`${rr.full_name}: not found so create`)
           newRepos.push(rr)
           continue
         }
         if (this.updateHookIfDiff(hook, rr.full_name, task)) {
+          console.log(`${rr.full_name}: found but has diff`)
           updatedRepos.push(rr)
           continue
         }
-        console.log('found but same!')
+        console.log(`${rr.full_name}: found and same settings`)
       }
     }
 

@@ -131,4 +131,13 @@ export class Github {
 
     return JSON.parse(res.getContentText())
   }
+
+  public deleteHook(repo: string, id: number) {
+    const res = UrlFetchApp.fetch(`${this.apiEndpoint}repos/${repo}/hooks/${id}`, {
+      method: 'delete',
+      headers: this.headers
+    })
+
+    return JSON.parse(res.getContentText())
+  }
 }
