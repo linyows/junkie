@@ -21,21 +21,25 @@ Usage
     ```
 1. Create google spreadsheet. For example:
 
-    Lang | Channel |  Hooks
-    ---  | ---     |  ---
-    go   | gopher  |  
-    ruby | rubyist |  
-    php  | phper   |  
+    Channel      | Webhook                | Organizations | Language   | Hook Events | Ignore
+    ---          | ---                    |  ---          | ---        | ---         | ---
+    gopher       | https://hooks.slack... | foo<br>bar    | go         | pull_request<br>pull_request_review... |
+    typescripter | https://hooks.slack... | baz<br>bot    | typescript | pull_request<br>pull_request_review... |
+    rubyist      | https://hooks.slack... | hoge          | ruby       | pull_request<br>pull_request_review... |
+    phper        | https://hooks.slack... | fuga          | php        | pull_request<br>pull_request_review... |
+    
+    - Sheet name is `config` <-  :warning: Important!
+    - WebHook Events: https://developer.github.com/webhooks/#events
 1. Set script properties as ENV(File > Project properties > Script properties)
     - SLACK_ACCESS_TOKEN
     - GITHUB_ACCESS_TOKEN
     - GITHUB_API_ENDPOINT(optional)
 1. Add project trigger(Edit > Current project's triggers > Add trigger)
-    - Choose which function to run: `notify`
+    - Choose which function to run: `main`
     - Which run at deployment: `head`
     - Select event source: `Time-driven`
     - Select type of time based trigger: `Minute timer`
-    - Select hour interval: `Every minute`
+    - Select hour interval: `Every 10 minutes`
 
 Contribution
 ------------
