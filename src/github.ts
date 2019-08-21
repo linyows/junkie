@@ -111,10 +111,10 @@ export class Github {
     const res = UrlFetchApp.fetch(`${this.apiEndpoint}repos/${repo}/hooks`, {
       method: 'post',
       headers: this.headers,
-      payload: {
+      payload: JSON.stringify({
         config: { url: webhook },
         events: events
-      }
+      })
     })
 
     return JSON.parse(res.getContentText())
@@ -124,9 +124,9 @@ export class Github {
     const res = UrlFetchApp.fetch(`${this.apiEndpoint}repos/${repo}/hooks/${id}`, {
       method: 'post',
       headers: this.headers,
-      payload: {
+      payload: JSON.stringify({
         events: events
-      }
+      })
     })
 
     return JSON.parse(res.getContentText())
