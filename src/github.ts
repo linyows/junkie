@@ -132,12 +132,12 @@ export class Github {
     return JSON.parse(res.getContentText())
   }
 
-  public deleteHook(repo: string, id: number) {
+  public deleteHook(repo: string, id: number): boolean {
     const res = UrlFetchApp.fetch(`${this.apiEndpoint}repos/${repo}/hooks/${id}`, {
       method: 'delete',
       headers: this.headers
     })
 
-    return JSON.parse(res.getContentText())
+    return true
   }
 }
