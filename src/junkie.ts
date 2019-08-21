@@ -180,7 +180,7 @@ export class Junkie {
     for (const aRepos of allRepos) {
       for (const rr of aRepos.repos) {
         const hook: Hook = this.github.findHook(rr.full_name, task.webhook)
-        if (task.ignore.find((el) => rr.full_name === el)) {
+        if (task.ignore.indexOf(rr.full_name) !== -1) {
           const m = `${rr.full_name}: ignored`
           if (hook !== undefined) {
             m += 'and hook delete'
