@@ -73,7 +73,7 @@ export class Github {
   }
 
   public reposByUserAndLang(u: string, l: string) {
-    const res = this.searchRepos(`+language:${l}+user:${u}`)
+    const res = this.searchRepos(`+language:${l}+user:${u}+archived:false`)
 
     return (res.items.length > 0) ? res.items : []
   }
