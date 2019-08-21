@@ -108,7 +108,7 @@ export class Github {
   }
 
   public createHook(repo: string, webhook: string, events: string[]) {
-    const res = UrlFetchApp.fetch(`${this.apiEndpoint}/repos/${repo}/hooks`, {
+    const res = UrlFetchApp.fetch(`${this.apiEndpoint}repos/${repo}/hooks`, {
       method: 'post',
       headers: this.headers,
       payload: {
@@ -121,7 +121,7 @@ export class Github {
   }
 
   public updateHookEvents(repo: string, id: number, events: string[]) {
-    const res = UrlFetchApp.fetch(`${this.apiEndpoint}/repos/${repo}/hooks/${id}`, {
+    const res = UrlFetchApp.fetch(`${this.apiEndpoint}repos/${repo}/hooks/${id}`, {
       method: 'post',
       headers: this.headers,
       payload: {
